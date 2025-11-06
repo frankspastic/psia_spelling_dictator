@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spelling Dictator - Grades 4-5</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Spelling Dictator</h1>
+            <p class="subtitle">PSIA Spelling Lists (2025-2026)</p>
+        </header>
+
+        <div class="settings-panel">
+            <div class="setting-group">
+                <label for="gradeLevel">Grade Level:</label>
+                <select id="gradeLevel">
+                    <option value="gr23">Grades 2-3 (600 words)</option>
+                    <option value="gr45" selected>Grades 4-5 (800 words)</option>
+                </select>
+            </div>
+            <div class="mode-selector">
+                <label class="mode-option">
+                    <input type="radio" name="mode" value="random" checked>
+                    <span>Random Words</span>
+                </label>
+                <label class="mode-option">
+                    <input type="radio" name="mode" value="custom">
+                    <span>Select Specific Words</span>
+                </label>
+            </div>
+
+            <div id="randomMode" class="mode-content">
+                <div class="setting-group">
+                    <label for="wordCount">Number of words:</label>
+                    <input type="number" id="wordCount" min="1" max="800" value="10">
+                </div>
+            </div>
+
+            <div id="customMode" class="mode-content" style="display: none;">
+                <div class="setting-group">
+                    <label>Load a saved list:</label>
+                    <div class="saved-lists-section">
+                        <select id="savedListsSelect">
+                            <option value="">-- Select a saved list --</option>
+                        </select>
+                        <button type="button" id="loadListBtn" class="btn btn-small">Load</button>
+                        <button type="button" id="deleteListBtn" class="btn btn-small btn-danger-small">Delete</button>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label>Select words from the list:</label>
+                    <div class="word-search">
+                        <input type="text" id="wordSearch" placeholder="Search words...">
+                        <button type="button" id="selectAllBtn" class="btn btn-small">Select All</button>
+                        <button type="button" id="clearAllBtn" class="btn btn-small">Clear All</button>
+                    </div>
+                    <div class="word-selector" id="wordSelector"></div>
+                    <div class="selected-count">
+                        Selected: <span id="selectedCount">0</span> words
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label>Save current selection:</label>
+                    <div class="save-list-section">
+                        <input type="text" id="listName" placeholder="Enter list name...">
+                        <button type="button" id="saveListBtn" class="btn btn-small">Save List</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <label for="interval">Interval (seconds):</label>
+                <input type="number" id="interval" min="1" max="60" value="5">
+            </div>
+
+            <div class="setting-group">
+                <label for="voiceSelect">Voice:</label>
+                <select id="voiceSelect"></select>
+            </div>
+
+            <div class="setting-group">
+                <label for="speed">Speech Rate:</label>
+                <input type="range" id="speed" min="0.5" max="1.5" step="0.1" value="0.9">
+                <span id="speedValue">0.9x</span>
+            </div>
+
+            <button id="startBtn" class="btn btn-primary">Start Dictation</button>
+        </div>
+
+        <div class="dictation-panel" id="dictationPanel" style="display: none;">
+            <div class="progress-info">
+                <div class="word-counter">
+                    Word <span id="currentWord">0</span> of <span id="totalWords">0</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="current-word-display">
+                <h2 id="currentWordText">Ready...</h2>
+                <p class="word-number" id="wordNumber"></p>
+            </div>
+
+            <div class="timer-display">
+                <span id="timer">--</span>
+            </div>
+
+            <div class="controls">
+                <button id="prevBtn" class="btn btn-control">⏮ Previous</button>
+                <button id="pauseBtn" class="btn btn-control">⏸ Pause</button>
+                <button id="nextBtn" class="btn btn-control">Next ⏭</button>
+            </div>
+
+            <div class="additional-controls">
+                <button id="repeatBtn" class="btn btn-secondary">🔁 Repeat Word</button>
+                <button id="stopBtn" class="btn btn-danger">⏹ Stop & Reset</button>
+            </div>
+
+            <div class="word-list-toggle">
+                <button id="toggleListBtn" class="btn btn-secondary">Show Word List</button>
+            </div>
+
+            <div class="word-list" id="wordList" style="display: none;">
+                <h3>Selected Words:</h3>
+                <ol id="wordListItems"></ol>
+            </div>
+        </div>
+    </div>
+
+    <script src="words.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
