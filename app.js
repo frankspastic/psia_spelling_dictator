@@ -13,6 +13,9 @@ class SpellingDictator {
         this.voices = [];
         this.selectedVoice = null;
         this.currentMode = 'random';
+        this.audioCache = {}; // Cache for audio elements
+        this.currentAudio = null; // Track currently playing audio
+        this.usePreGeneratedAudio = true; // Try pre-generated audio first
 
         this.initElements();
         this.initEventListeners();
@@ -464,10 +467,68 @@ class SpellingDictator {
         }, halfwayTime);
     }
 
-    speak(text) {
-        // Cancel any ongoing speech
+    sanitizeFilename(word) {
+        // Convert word to safe filename (lowercase, keep hyphens, replace spaces with underscores)
+        let filename = word.toLowerCase();
+        filename = filename.replace(/\s+/g, '_');
+        // Keep only alphanumeric, hyphens, and underscores
+        filename = filename.replace(/[^a-z0-9_-]/g, '');
+        return filename;
+    }
+
+    getAudioPath(word) {
+        // Determine the correct audio path based on current grade level
+        const gradeLevel = this.gradeLevelSelect.value;
+        const sanitized = this.sanitizeFilename(word);
+        return `audio/${gradeLevel}/${sanitized}.mp3`;
+    }
+
+    async speak(text) {
+        // Stop any currently playing audio
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio.currentTime = 0;
+        }
+
+        // Cancel any ongoing speech synthesis
         this.synth.cancel();
 
+        if (this.usePreGeneratedAudio) {
+            try {
+                const audioPath = this.getAudioPath(text);
+
+                // Check if audio is already cached
+                if (this.audioCache[audioPath]) {
+                    this.currentAudio = this.audioCache[audioPath];
+                } else {
+                    // Create new audio element
+                    const audio = new Audio(audioPath);
+
+                    // Wait for audio to load to verify it exists
+                    await new Promise((resolve, reject) => {
+                        audio.addEventListener('canplaythrough', resolve, { once: true });
+                        audio.addEventListener('error', reject, { once: true });
+                        audio.load();
+                    });
+
+                    // Cache the audio element
+                    this.audioCache[audioPath] = audio;
+                    this.currentAudio = audio;
+                }
+
+                // Apply playback rate (speed)
+                this.currentAudio.playbackRate = parseFloat(this.speedInput.value);
+
+                // Play the audio
+                await this.currentAudio.play();
+                return;
+            } catch (error) {
+                console.warn(`Pre-generated audio not found for "${text}", falling back to Web Speech API`, error);
+                // Fall through to Web Speech API fallback
+            }
+        }
+
+        // Fallback to Web Speech API
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.rate = parseFloat(this.speedInput.value);
         utterance.pitch = 1;
@@ -517,6 +578,10 @@ class SpellingDictator {
         if (this.isPaused) {
             this.pauseBtn.innerHTML = '▶ Resume';
             this.pauseBtn.classList.add('paused');
+            // Stop any playing audio
+            if (this.currentAudio) {
+                this.currentAudio.pause();
+            }
             this.synth.cancel();
         } else {
             this.pauseBtn.innerHTML = '⏸ Pause';
@@ -575,6 +640,11 @@ class SpellingDictator {
         if (this.halfwayTimeoutId) {
             clearTimeout(this.halfwayTimeoutId);
             this.halfwayTimeoutId = null;
+        }
+        // Stop any playing audio
+        if (this.currentAudio) {
+            this.currentAudio.pause();
+            this.currentAudio.currentTime = 0;
         }
         this.synth.cancel();
     }
