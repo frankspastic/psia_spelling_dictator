@@ -44,6 +44,7 @@ class SpellingDictator {
         this.selectAllBtn = document.getElementById('selectAllBtn');
         this.clearAllBtn = document.getElementById('clearAllBtn');
         this.selectedCount = document.getElementById('selectedCount');
+        this.randomizeCustom = document.getElementById('randomizeCustom');
 
         // Saved lists
         this.savedListsSelect = document.getElementById('savedListsSelect');
@@ -403,8 +404,12 @@ class SpellingDictator {
                 alert('Please select at least one word from the list');
                 return;
             }
-            // Use the words in the order they were selected
-            this.selectedWords = [...this.customSelectedWords];
+            // Use the words in the order they were selected, or randomize if checkbox is checked
+            if (this.randomizeCustom.checked) {
+                this.selectedWords = this.shuffleArray([...this.customSelectedWords]);
+            } else {
+                this.selectedWords = [...this.customSelectedWords];
+            }
         }
 
         this.currentIndex = 0;
@@ -423,6 +428,16 @@ class SpellingDictator {
     getRandomWords(count) {
         const shuffled = [...SPELLING_WORDS].sort(() => Math.random() - 0.5);
         return shuffled.slice(0, count);
+    }
+
+    shuffleArray(array) {
+        // Fisher-Yates shuffle algorithm
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
     }
 
     showDictationPanel() {
